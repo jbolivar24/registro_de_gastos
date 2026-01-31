@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Gastos</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <h1>GASTOS</h1>
+
+  <form id="gastoForm">
+    <input type="date" id="fecha" required>
+    <input type="text" id="tipo" placeholder="Tipo de gasto" required>
+    <input type="number" id="neto" placeholder="Monto Neto" required>
+    <button>Guardar Gasto</button>
+  </form>
+
+  <table id="tablaGastos"></table>
+
+  <div class="export-actions">
+    <button type="button" class="btn-secondary" onclick="exportGastosCSV()">⬇️ Exportar CSV</button>
+    <button type="button" class="btn-secondary" onclick="exportGastosPDF()">🖨️ Exportar PDF</button>
+  </div>
+
+  <div class="footer-actions">
+    <a href="index.html" class="btn-volver">← Volver al resumen</a>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+  <script src="gastos.js"></script>
+
+</body>
+</html>

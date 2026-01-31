@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Productos</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <h1>PRODUCTOS</h1>
+
+  <form id="productoForm">
+    <input type="text" id="nombre" placeholder="Nombre del producto" required>
+    <input type="number" id="precio" placeholder="Precio venta" required>
+    <button>Guardar Producto</button>
+  </form>
+
+  <table id="tablaProductos"></table>
+
+  <div class="export-actions">
+    <button type="button" class="btn-secondary" onclick="exportProductosCSV()">⬇️ Exportar CSV</button>
+    <button type="button" class="btn-secondary" onclick="exportProductosPDF()">🖨️ Exportar PDF</button>
+  </div>
+
+  <div class="footer-actions">
+    <a href="index.html" class="btn-volver">← Volver al resumen</a>
+  </div>
+
+  <script src="data.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+
+  <script src="productos.js"></script>
+
+</body>
+</html>

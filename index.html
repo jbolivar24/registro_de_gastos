@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Resumen</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div class="card">
+
+    <div class="business-header">
+      <div class="business-name">JUAN DOMINGO SIMONETTI<br>QUEZADA</div>
+      <div class="business-giro">COMPRA Y VENTA DE PROD DE PANADERIA Y PA</div>
+      <div class="business-address">GAMERO 1803 1815 EX 2303 JA RIOS · INDEPENDENCIA · STGO</div>
+    </div>
+
+    <h1>RESUMEN DEL NEGOCIO</h1>
+
+    <div id="resumen"></div>
+
+    <div class="botones">
+      <button onclick="exportBackup()">📥 Guardar respaldo</button>
+
+      <input
+        type="file"
+        id="fileInput"
+        accept=".json,application/json"
+        style="display:none"
+        onchange="importBackup(event)"
+      >
+      <button onclick="document.getElementById('fileInput').click()">
+        📤 Cargar respaldo
+      </button>
+    </div>
+
+    <div class="nav">
+      <a href="ventas.html">Ir a Ventas</a>
+      |
+      <a href="gastos.html">Ir a Gastos</a>
+      |
+      <a href="productos.html">Productos</a>
+    </div>
+
+  </div>
+
+  <script src="data.js"></script>
+  <script src="resumen.js"></script>
+  <script src="backup.js"></script>
+
+</body>
+</html>

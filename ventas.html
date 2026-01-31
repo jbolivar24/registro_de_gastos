@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Ventas</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <h1>VENTAS</h1>
+
+  <form id="ventaForm">
+
+    <input type="date" id="fecha" required>
+    <input type="text" id="factura" placeholder="Factura" required>
+    <input type="text" id="cliente" placeholder="Cliente" required>
+
+    <h3>Detalle de la venta</h3>
+
+    <div class="item-row">
+      <select id="producto">
+        <option value="">Seleccione producto</option>
+      </select>
+
+      <input type="number" id="cantidad" placeholder="Cantidad" min="1">
+      <input type="number" id="precio" placeholder="Precio venta">
+      <button type="button" id="btnAgregarItem" class="btn-mini">➕</button>
+    </div>
+
+    <table id="tablaItems"></table>
+
+    <div class="totales">
+      <div>Neto: <strong id="neto">$0</strong></div>
+      <div>IVA 19%: <strong id="iva">$0</strong></div>
+      <div>Total: <strong id="total">$0</strong></div>
+    </div>
+
+    <button>Guardar Venta</button>
+  </form>
+
+  <table id="tablaVentas"></table>
+
+  <div class="export-actions">
+    <button type="button" class="btn-secondary" onclick="exportVentasCSV()">⬇️ Exportar CSV</button>
+    <button type="button" class="btn-secondary" onclick="exportVentasPDF()">🖨️ Exportar PDF</button>
+  </div>
+
+  <div class="footer-actions">
+    <a href="index.html" class="btn-volver">← Volver al resumen</a>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+  <script src="ventas.js"></script>
+
+  <!-- MODAL DETALLE VENTA -->
+  <div id="modalDetalle" class="modal hidden">
+    <div class="modal-content">
+      <h3>Detalle de la venta</h3>
+      <div id="modalBody"></div>
+      <div class="modal-actions">
+        <button onclick="cerrarModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
