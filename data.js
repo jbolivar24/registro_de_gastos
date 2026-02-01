@@ -90,3 +90,14 @@ function filterByDateRange(list, from, to) {
     return d >= dFrom && d <= dTo;
   });
 }
+
+function setDynamicTitle(suffix = "Administración") {
+  const user = getData("usuario");
+  const nombre = "Gestion comercial";//user?.razonSocial?.trim();
+
+  if (nombre) {
+    document.title = `${nombre} · ${suffix}`;
+  } else {
+    document.title = `Home · ${suffix}`;
+  }
+}

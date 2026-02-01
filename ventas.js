@@ -24,6 +24,8 @@ let ventasFiltradas = null;
 let items = [];
 let editIndex = null;
 
+setDynamicTitle("Ventas");
+
 productos.forEach(p => {
   const opt = document.createElement("option");
   opt.value = p.id;

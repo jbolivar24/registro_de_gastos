@@ -2,6 +2,8 @@
    HEADER
    ========================= */
 
+setDynamicTitle("Home");
+
 function renderBusinessHeader() {
   const user = getData("usuario");
   if (!user) return;

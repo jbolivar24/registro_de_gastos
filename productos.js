@@ -6,6 +6,8 @@ const precioInput = document.getElementById("precio");
 
 let editIndex = null;
 
+setDynamicTitle("Productos");
+
 if (!localStorage.getItem("productos")) {
   saveData("productos", []);
 }

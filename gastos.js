@@ -9,6 +9,8 @@ let gastosFiltrados = null;
 
 let editIndex = null;
 
+setDynamicTitle("Gastos");
+
 function render() {
   const allGastos = getData("gastos");
   const gastos = gastosFiltrados || allGastos;
