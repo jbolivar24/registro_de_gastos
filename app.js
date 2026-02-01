@@ -237,3 +237,14 @@ function render() {
 window.startApp = function () {
   render();
 };
+
+const logoutBtn = document.getElementById("logoutBtn");
+
+if (logoutBtn) {
+  logoutBtn.onclick = () => {
+    if (!confirm("¿Cerrar sesión?")) return;
+
+    localStorage.removeItem("personal_unlocked");
+    location.reload(); // vuelve a pedir PIN
+  };
+}
