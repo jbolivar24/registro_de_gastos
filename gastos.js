@@ -1,3 +1,4 @@
+// ================= ELEMENTOS =================
 const f = document.getElementById("gastoForm");
 const t = document.getElementById("tablaGastos");
 
@@ -5,12 +6,19 @@ const gastoDesde = document.getElementById("gastoDesde");
 const gastoHasta = document.getElementById("gastoHasta");
 const btnFiltrarGastos = document.getElementById("btnFiltrarGastos");
 
-let gastosFiltrados = null;
+const fecha = document.getElementById("fecha");
+const tipo = document.getElementById("tipo");
+const netoInput = document.getElementById("neto");
 
+// ================= DATOS =================
+const usuario = getData("usuario") || {};
+
+let gastosFiltrados = null;
 let editIndex = null;
 
 setDynamicTitle("Gastos");
 
+// ================= RENDER =================
 function render() {
   const allGastos = getData("gastos");
   const gastos = gastosFiltrados || allGastos;
@@ -50,6 +58,7 @@ function render() {
   });
 }
 
+// ================= FILTRO =================
 btnFiltrarGastos.onclick = () => {
   if (!gastoDesde.value || !gastoHasta.value) {
     alert("Seleccione ambas fechas");
@@ -65,12 +74,14 @@ btnFiltrarGastos.onclick = () => {
   render();
 };
 
+// ================= GUARDAR =================
 f.onsubmit = (e) => {
   e.preventDefault();
 
   const neto = Number(netoInput.value);
-  const total = Math.round(neto * 1.19);
+  if (neto <= 0) return;
 
+  const total = Math.round(neto * 1.19);
   const gastos = getData("gastos");
 
   const gasto = {
@@ -91,6 +102,7 @@ f.onsubmit = (e) => {
   render();
 };
 
+// ================= ACCIONES =================
 function eliminar(i) {
   if (!confirm("¿Eliminar este gasto?")) return;
   const gastos = getData("gastos");
@@ -100,8 +112,7 @@ function eliminar(i) {
 }
 
 function editar(i) {
-  const gastos = getData("gastos");
-  const g = gastos[i];
+  const g = getData("gastos")[i];
 
   fecha.value = g.f;
   tipo.value = g.ti;
@@ -110,42 +121,45 @@ function editar(i) {
   editIndex = i;
 }
 
+// ================= EXPORT CSV =================
 function exportGastosCSV() {
   const gastos = getData("gastos");
   if (!gastos.length) return alert("No hay gastos para exportar.");
 
-  const header = ["Fecha","Tipo","Neto","IVA","Total"];
+  const header = ["Fecha", "Tipo", "Neto", "IVA", "Total"];
   const rows = gastos.map(g => {
     const neto = Math.round((g.t || 0) / 1.19);
     const iva  = (g.t || 0) - neto;
-    return [g.f||"", g.ti||"", neto, iva, g.t||0];
+    return [g.f || "", g.ti || "", neto, iva, g.t || 0];
   });
 
   const csv = [header, ...rows]
-    .map(r => r.map(x => `"${String(x).replace(/"/g,'""')}"`).join(","))
+    .map(r => r.map(x => `"${String(x).replace(/"/g, '""')}"`).join(","))
     .join("\n");
 
   downloadText(`gastos_${fileStamp()}.csv`, csv, "text/csv;charset=utf-8");
 }
 
+// ================= EXPORT PDF =================
 function exportGastosPDF() {
   const gastos = getData("gastos");
   if (!gastos.length) return alert("No hay gastos para exportar.");
 
+  if (!usuario.razonSocial) {
+    alert("Complete los datos del negocio antes de exportar.");
+    return;
+  }
+
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF("p", "pt", "a4");
 
-  // ===== HEADER =====
+  // ===== HEADER DINÁMICO =====
   doc.setFontSize(14);
-  doc.text("JUAN DOMINGO SIMONETTI QUEZADA", 40, 40);
+  doc.text(usuario.razonSocial, 40, 40);
 
   doc.setFontSize(10);
-  doc.text("COMPRA Y VENTA DE PROD DE PANADERIA Y PA", 40, 58);
-  doc.text(
-    "GAMERO 1803 1815 EX 2303 JA RIOS · INDEPENDENCIA · STGO",
-    40,
-    72
-  );
+  doc.text(usuario.giro || "", 40, 58);
+  doc.text(usuario.direccion || "", 40, 72);
 
   doc.setFontSize(12);
   doc.text("Reporte de Gastos", 40, 100);
@@ -176,21 +190,15 @@ function exportGastosPDF() {
     }
   });
 
-  // ===== FOOTER =====
-  const y = doc.lastAutoTable.finalY + 20;
   doc.setFontSize(9);
   doc.text(
     `Generado: ${new Date().toLocaleString("es-CL")}`,
     40,
-    y
+    doc.lastAutoTable.finalY + 20
   );
 
-  // ⬇️ DESCARGA DIRECTA
   doc.save(`gastos_${fileStamp()}.pdf`);
 }
 
-const fecha = document.getElementById("fecha");
-const tipo = document.getElementById("tipo");
-const netoInput = document.getElementById("neto");
-
+// ================= INIT =================
 render();

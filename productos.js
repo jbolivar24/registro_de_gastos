@@ -1,17 +1,23 @@
+// ================= ELEMENTOS =================
 const form = document.getElementById("productoForm");
 const tabla = document.getElementById("tablaProductos");
 
 const nombreInput = document.getElementById("nombre");
 const precioInput = document.getElementById("precio");
 
+// ================= DATOS =================
+const usuario = getData("usuario") || {};
+
 let editIndex = null;
 
 setDynamicTitle("Productos");
 
+// Inicialización segura
 if (!localStorage.getItem("productos")) {
   saveData("productos", []);
 }
 
+// ================= RENDER =================
 function render() {
   const productos = getData("productos");
 
@@ -41,15 +47,21 @@ function render() {
   });
 }
 
+// ================= GUARDAR =================
 form.onsubmit = (e) => {
   e.preventDefault();
+
+  const nombre = nombreInput.value.trim();
+  const precio = Number(precioInput.value);
+
+  if (!nombre || precio <= 0) return;
 
   const productos = getData("productos");
 
   const producto = {
     id: Date.now(),
-    nombre: nombreInput.value.trim(),
-    precio: Number(precioInput.value)
+    nombre,
+    precio
   };
 
   if (editIndex !== null) {
@@ -65,6 +77,7 @@ form.onsubmit = (e) => {
   render();
 };
 
+// ================= ACCIONES =================
 function editar(i) {
   const p = getData("productos")[i];
   nombreInput.value = p.nombre;
@@ -80,6 +93,7 @@ function eliminar(i) {
   render();
 }
 
+// ================= EXPORT CSV =================
 function exportProductosCSV() {
   const productos = getData("productos");
   if (!productos.length) return alert("No hay productos para exportar.");
@@ -89,11 +103,12 @@ function exportProductosCSV() {
 
   const csv = [header, ...rows]
     .map(r => r.map(x => `"${String(x).replace(/"/g, '""')}"`).join(","))
-    .join("\n"); // ✅ línea correcta
+    .join("\n");
 
   downloadText(`productos_${fileStamp()}.csv`, csv, "text/csv;charset=utf-8");
 }
 
+// ================= EXPORT PDF =================
 function exportProductosPDF() {
   const productos = getData("productos");
   if (!productos.length) {
@@ -101,20 +116,21 @@ function exportProductosPDF() {
     return;
   }
 
+  if (!usuario.razonSocial) {
+    alert("Complete los datos del negocio antes de exportar.");
+    return;
+  }
+
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF("p", "pt", "a4");
 
-  // ===== ENCABEZADO =====
+  // ===== HEADER DINÁMICO =====
   doc.setFontSize(14);
-  doc.text("JUAN DOMINGO SIMONETTI QUEZADA", 40, 40);
+  doc.text(usuario.razonSocial, 40, 40);
 
   doc.setFontSize(10);
-  doc.text("COMPRA Y VENTA DE PROD DE PANADERIA Y PA", 40, 58);
-  doc.text(
-    "GAMERO 1803 1815 EX 2303 JA RIOS · INDEPENDENCIA · STGO",
-    40,
-    72
-  );
+  doc.text(usuario.giro || "", 40, 58);
+  doc.text(usuario.direccion || "", 40, 72);
 
   doc.setFontSize(12);
   doc.text("Listado de Productos", 40, 100);
@@ -128,7 +144,7 @@ function exportProductosPDF() {
   doc.autoTable({
     startY: 120,
     head: [["Producto", "Precio"]],
-    body: body,
+    body,
     styles: { fontSize: 10 },
     headStyles: { fillColor: [230, 230, 230] },
     columnStyles: {
@@ -136,17 +152,15 @@ function exportProductosPDF() {
     }
   });
 
-  // ===== FOOTER =====
-  const y = doc.lastAutoTable.finalY + 20;
   doc.setFontSize(9);
   doc.text(
     `Generado: ${new Date().toLocaleString("es-CL")}`,
     40,
-    y
+    doc.lastAutoTable.finalY + 20
   );
 
-  // ⬇️ DESCARGA DIRECTA
   doc.save(`productos_${fileStamp()}.pdf`);
 }
 
+// ================= INIT =================
 render();

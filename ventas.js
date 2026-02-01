@@ -1,5 +1,8 @@
+// ================= DATOS BASE =================
 const productos = getData("productos") || [];
+const usuario   = getData("usuario") || [];
 
+// ================= ELEMENTOS =================
 const form = document.getElementById("ventaForm");
 const tablaVentas = document.getElementById("tablaVentas");
 const tablaItems = document.getElementById("tablaItems");
@@ -15,17 +18,19 @@ const precioInput = document.getElementById("precio");
 const netoEl = document.getElementById("neto");
 const ivaEl = document.getElementById("iva");
 const totalEl = document.getElementById("total");
+
 const ventaDesde = document.getElementById("ventaDesde");
 const ventaHasta = document.getElementById("ventaHasta");
 const btnFiltrarVentas = document.getElementById("btnFiltrarVentas");
 
+// ================= ESTADO =================
 let ventasFiltradas = null;
-
 let items = [];
 let editIndex = null;
 
 setDynamicTitle("Ventas");
 
+// ================= PRODUCTOS =================
 productos.forEach(p => {
   const opt = document.createElement("option");
   opt.value = p.id;
@@ -38,6 +43,7 @@ productoSel.onchange = () => {
   if (p) precioInput.value = p.precio;
 };
 
+// ================= ITEMS =================
 document.getElementById("btnAgregarItem").onclick = () => {
   const p = productos.find(x => x.id == productoSel.value);
   const cantidad = Number(cantidadInput.value);
@@ -45,11 +51,7 @@ document.getElementById("btnAgregarItem").onclick = () => {
 
   if (!p || cantidad <= 0 || precio <= 0) return;
 
-  items.push({
-    nombre: p.nombre,
-    cantidad,
-    precio
-  });
+  items.push({ nombre: p.nombre, cantidad, precio });
 
   cantidadInput.value = "";
   precioInput.value = "";
@@ -100,6 +102,7 @@ function eliminarItem(i) {
   renderItems();
 }
 
+// ================= GUARDAR VENTA =================
 form.onsubmit = (e) => {
   e.preventDefault();
   if (items.length === 0) return alert("Agregue al menos un item");
@@ -135,6 +138,7 @@ form.onsubmit = (e) => {
   renderVentas();
 };
 
+// ================= TABLA VENTAS =================
 function renderVentas() {
   const allVentas = getData("ventas");
   const ventas = ventasFiltradas || allVentas;
@@ -174,6 +178,7 @@ function renderVentas() {
   });
 }
 
+// ================= FILTRO =================
 btnFiltrarVentas.onclick = () => {
   if (!ventaDesde.value || !ventaHasta.value) {
     alert("Seleccione ambas fechas");
@@ -189,6 +194,7 @@ btnFiltrarVentas.onclick = () => {
   renderVentas();
 };
 
+// ================= ACCIONES =================
 function eliminar(i) {
   if (!confirm("¿Eliminar esta venta?")) return;
   const ventas = getData("ventas");
@@ -198,8 +204,7 @@ function eliminar(i) {
 }
 
 function editar(i) {
-  const ventas = getData("ventas");
-  const v = ventas[i];
+  const v = getData("ventas")[i];
 
   fecha.value = v.f;
   factura.value = v.fa;
@@ -227,18 +232,9 @@ function verDetalle(i) {
 
   html += `
     <div class="modal-total">
-      <div class="modal-body-item">
-        <span>Neto</span>
-        <span>${formatCLP(v.neto)}</span>
-      </div>
-      <div class="modal-body-item">
-        <span>IVA 19%</span>
-        <span>${formatCLP(v.iva)}</span>
-      </div>
-      <div class="modal-body-item">
-        <span>Total</span>
-        <span>${formatCLP(v.t)}</span>
-      </div>
+      <div class="modal-body-item"><span>Neto</span><span>${formatCLP(v.neto)}</span></div>
+      <div class="modal-body-item"><span>IVA 19%</span><span>${formatCLP(v.iva)}</span></div>
+      <div class="modal-body-item"><span>Total</span><span>${formatCLP(v.t)}</span></div>
     </div>
   `;
 
@@ -250,67 +246,44 @@ function cerrarModal() {
   document.getElementById("modalDetalle").classList.add("hidden");
 }
 
-function exportVentasCSV() {
-  const ventas = getData("ventas");
-  if (!ventas.length) return alert("No hay ventas para exportar.");
-
-  const header = ["Fecha","Factura","Cliente","Neto","IVA","Total","Items"];
-  const rows = ventas.map(v => {
-    const itemsTxt = (v.items || []).map(it => `${it.nombre} x${it.cantidad} @${it.precio}`).join(" | ");
-    return [v.f||"", v.fa||"", v.c||"", v.neto||0, v.iva||0, v.t||0, itemsTxt];
-  });
-
-  const csv = [header, ...rows]
-    .map(r => r.map(x => `"${String(x).replace(/"/g,'""')}"`).join(","))
-    .join("\n");
-
-  downloadText(`ventas_${fileStamp()}.csv`, csv, "text/csv;charset=utf-8");
-}
-
+// ================= PDF =================
 function exportVentasPDF() {
   const ventas = getData("ventas");
   if (!ventas.length) return alert("No hay ventas para exportar.");
 
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF("l", "pt", "a4"); // horizontal
+  if (!usuario.razonSocial) {
+    alert("Complete los datos del negocio antes de exportar.");
+    return;
+  }
 
-  // ===== HEADER =====
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF("l", "pt", "a4");
+
+  // ===== HEADER DINÁMICO =====
   doc.setFontSize(14);
-  doc.text("JUAN DOMINGO SIMONETTI QUEZADA", 40, 40);
+  doc.text(usuario.razonSocial, 40, 40);
 
   doc.setFontSize(10);
-  doc.text("COMPRA Y VENTA DE PROD DE PANADERIA Y PA", 40, 58);
-  doc.text(
-    "GAMERO 1803 1815 EX 2303 JA RIOS · INDEPENDENCIA · STGO",
-    40,
-    72
-  );
+  doc.text(usuario.giro || "", 40, 58);
+  doc.text(usuario.direccion || "", 40, 72);
 
   doc.setFontSize(12);
   doc.text("Reporte de Ventas", 40, 100);
 
   // ===== TABLA =====
   const body = ventas.map(v => [
-    v.f || "",
-    v.fa || "",
-    v.c || "",
-    formatCLP(v.neto || 0),
-    formatCLP(v.iva || 0),
-    formatCLP(v.t || 0),
+    v.f,
+    v.fa,
+    v.c,
+    formatCLP(v.neto),
+    formatCLP(v.iva),
+    formatCLP(v.t),
     (v.items || []).map(it => `${it.nombre} (${it.cantidad})`).join(", ")
   ]);
 
   doc.autoTable({
     startY: 120,
-    head: [[
-      "Fecha",
-      "Factura",
-      "Cliente",
-      "Neto",
-      "IVA",
-      "Total",
-      "Detalle"
-    ]],
+    head: [["Fecha","Factura","Cliente","Neto","IVA","Total","Detalle"]],
     body,
     styles: { fontSize: 8 },
     headStyles: { fillColor: [220, 220, 220] },
@@ -321,16 +294,9 @@ function exportVentasPDF() {
     }
   });
 
-  // ===== FOOTER =====
-  const y = doc.lastAutoTable.finalY + 20;
   doc.setFontSize(9);
-  doc.text(
-    `Generado: ${new Date().toLocaleString("es-CL")}`,
-    40,
-    y
-  );
+  doc.text(`Generado: ${new Date().toLocaleString("es-CL")}`, 40, doc.lastAutoTable.finalY + 20);
 
-  // ⬇️ DESCARGA DIRECTA
   doc.save(`ventas_${fileStamp()}.pdf`);
 }
 
