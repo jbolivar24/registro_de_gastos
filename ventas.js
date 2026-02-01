@@ -15,6 +15,11 @@ const precioInput = document.getElementById("precio");
 const netoEl = document.getElementById("neto");
 const ivaEl = document.getElementById("iva");
 const totalEl = document.getElementById("total");
+const ventaDesde = document.getElementById("ventaDesde");
+const ventaHasta = document.getElementById("ventaHasta");
+const btnFiltrarVentas = document.getElementById("btnFiltrarVentas");
+
+let ventasFiltradas = null;
 
 let items = [];
 let editIndex = null;
@@ -129,7 +134,8 @@ form.onsubmit = (e) => {
 };
 
 function renderVentas() {
-  const ventas = getData("ventas");
+  const allVentas = getData("ventas");
+  const ventas = ventasFiltradas || allVentas;
 
   tablaVentas.innerHTML = `
     <tr>
@@ -165,6 +171,21 @@ function renderVentas() {
     animateNumber(td, Number(td.dataset.valor), 400);
   });
 }
+
+btnFiltrarVentas.onclick = () => {
+  if (!ventaDesde.value || !ventaHasta.value) {
+    alert("Seleccione ambas fechas");
+    return;
+  }
+
+  ventasFiltradas = filterByDateRange(
+    getData("ventas"),
+    ventaDesde.value,
+    ventaHasta.value
+  );
+
+  renderVentas();
+};
 
 function eliminar(i) {
   if (!confirm("¿Eliminar esta venta?")) return;

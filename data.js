@@ -78,3 +78,15 @@ function openPrintWindow(title, htmlBody) {
   win.focus();
   setTimeout(() => win.print(), 250);
 }
+
+function filterByDateRange(list, from, to) {
+  if (!from || !to) return list;
+
+  const dFrom = new Date(from);
+  const dTo   = new Date(to);
+
+  return list.filter(it => {
+    const d = new Date(it.f);
+    return d >= dFrom && d <= dTo;
+  });
+}

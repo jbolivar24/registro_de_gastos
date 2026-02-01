@@ -1,10 +1,17 @@
 const f = document.getElementById("gastoForm");
 const t = document.getElementById("tablaGastos");
 
+const gastoDesde = document.getElementById("gastoDesde");
+const gastoHasta = document.getElementById("gastoHasta");
+const btnFiltrarGastos = document.getElementById("btnFiltrarGastos");
+
+let gastosFiltrados = null;
+
 let editIndex = null;
 
 function render() {
-  const gastos = getData("gastos");
+  const allGastos = getData("gastos");
+  const gastos = gastosFiltrados || allGastos;
 
   t.innerHTML = `
     <tr>
@@ -40,6 +47,21 @@ function render() {
     animateNumber(td, Number(td.dataset.valor), 400);
   });
 }
+
+btnFiltrarGastos.onclick = () => {
+  if (!gastoDesde.value || !gastoHasta.value) {
+    alert("Seleccione ambas fechas");
+    return;
+  }
+
+  gastosFiltrados = filterByDateRange(
+    getData("gastos"),
+    gastoDesde.value,
+    gastoHasta.value
+  );
+
+  render();
+};
 
 f.onsubmit = (e) => {
   e.preventDefault();
