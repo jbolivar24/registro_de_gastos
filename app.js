@@ -248,3 +248,82 @@ if (logoutBtn) {
     location.reload(); // vuelve a pedir PIN
   };
 }
+
+const exportJsonBtn = document.getElementById("exportJson");
+
+exportJsonBtn.onclick = () => {
+  const gastos = load();
+
+  if (!gastos.length) {
+    alert("No hay datos para guardar");
+    return;
+  }
+
+  const payload = {
+    exportedAt: new Date().toISOString(),
+    total: gastos.reduce((a, g) => a + g.amount, 0),
+    gastos
+  };
+
+  const json = JSON.stringify(payload, null, 2);
+  const blob = new Blob([json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `gastos_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+
+  URL.revokeObjectURL(url);
+};
+
+const importJsonBtn  = document.getElementById("importJson");
+const importFileEl   = document.getElementById("importFile");
+
+importJsonBtn.onclick = () => {
+  importFileEl.value = "";
+  importFileEl.click();
+};
+
+importFileEl.onchange = e => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+
+      // 🛑 Validaciones mínimas
+      if (!data.gastos || !Array.isArray(data.gastos)) {
+        throw new Error("Formato inválido (no existe 'gastos')");
+      }
+
+      data.gastos.forEach(g => {
+        if (
+          !g.date ||
+          !g.category ||
+          typeof g.amount !== "number"
+        ) {
+          throw new Error("Estructura de gasto inválida");
+        }
+      });
+
+      if (!confirm("Esto reemplazará los datos actuales. ¿Continuar?")) {
+        return;
+      }
+
+      // Guardar
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data.gastos));
+      render();
+
+      alert("Datos importados correctamente ✔️");
+
+    } catch (err) {
+      alert("Error al importar el archivo:\n" + err.message);
+    }
+  };
+
+  reader.readAsText(file);
+};
