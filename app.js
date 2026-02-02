@@ -274,7 +274,7 @@ exportJsonBtn.onclick = () => {
 
   const a = document.createElement("a");
   a.href = url;
-  a.download = `gastos_${new Date().toISOString().slice(0,10)}.json`;
+  a.download = getBackupFilename();
   a.click();
 
   URL.revokeObjectURL(url);
@@ -330,3 +330,14 @@ importFileEl.onchange = e => {
 
   reader.readAsText(file); 
 };
+
+function getBackupFilename() {
+  const d = new Date();
+
+  const pad = n => String(n).padStart(2, "0");
+
+  const fecha = `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear()}`;
+  const hora  = `${pad(d.getHours())}-${pad(d.getMinutes())}-${pad(d.getSeconds())}`;
+
+  return `gastos_${fecha}_${hora}.json`;
+}
