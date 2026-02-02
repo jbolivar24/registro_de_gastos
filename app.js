@@ -325,5 +325,5 @@ importFileEl.onchange = e => {
     }
   };
 
-  reader.readAsText(file);
+  reader.readAsText(file); 
 };
