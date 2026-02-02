@@ -249,6 +249,12 @@ function render() {
 
 // ================== BOOT (llamado desde pin.js) ==================
 window.startApp = function () {
+  const lastMonth = getLastMonthWithData();
+
+  if (lastMonth) {
+    monthFilterEl.value = lastMonth;
+  }
+
   render();
 };
 
@@ -398,4 +404,15 @@ function formatMonthLabel(month) {
     month: "long",
     year: "numeric"
   });
+}
+
+function getLastMonthWithData() {
+  const gastos = load();
+  if (!gastos.length) return "";
+
+  // ordenar por fecha descendente
+  gastos.sort((a, b) => b.date.localeCompare(a.date));
+
+  // devolver YYYY-MM del más reciente
+  return gastos[0].date.slice(0, 7);
 }
