@@ -1,41 +1,47 @@
-// ================== STORAGE ==================
-const STORAGE_KEY = "gastos";
-
-const compareMonthA = document.getElementById("compareMonthA");
-const compareMonthB = document.getElementById("compareMonthB");
-const compareBtn    = document.getElementById("compareBtn");
-const compareResult = document.getElementById("compareResult");
+// ================== ESTADO EN MEMORIA ==================
+let gastos = [];
+let categorias = new Set();
 
 // ================== ELEMENTOS ==================
 const monthFilterEl  = document.getElementById("monthFilter");
 const clearFilterBtn = document.getElementById("clearFilter");
 
-const btnAdd     = document.getElementById("btnAdd");
-const modal      = document.getElementById("modal");
-const cancelBtn  = document.getElementById("cancel");
-const saveBtn    = document.getElementById("save");
+const btnAdd    = document.getElementById("btnAdd");
+const modal     = document.getElementById("modal");
+const cancelBtn = document.getElementById("cancel");
+const saveBtn   = document.getElementById("save");
 
 const dateEl     = document.getElementById("date");
 const categoryEl = document.getElementById("category");
+const categoryListEl = document.getElementById("categoryList");
 const amountEl   = document.getElementById("amount");
 
 const bodyEl        = document.getElementById("gastosBody");
 const resumenEl     = document.getElementById("resumen");
 const totalGlobalEl = document.getElementById("totalGlobal");
 
-const exportCsvBtn = document.getElementById("exportCsv");
-const exportPdfBtn = document.getElementById("exportPdf");
+const exportCsvBtn  = document.getElementById("exportCsv");
+const exportPdfBtn  = document.getElementById("exportPdf");
+const exportJsonBtn = document.getElementById("exportJson");
+
+const importJsonBtn = document.getElementById("importJson");
+const importFileEl  = document.getElementById("importFile");
+
+const compareMonthA = document.getElementById("compareMonthA");
+const compareMonthB = document.getElementById("compareMonthB");
+const compareBtn    = document.getElementById("compareBtn");
+const compareResult = document.getElementById("compareResult");
 
 const chartEl = document.getElementById("chartRubro");
 let rubroChart = null;
 
-// ================== INIT UI ==================
+// ================== INIT ==================
 dateEl.valueAsDate = new Date();
 
 btnAdd.onclick    = () => modal.classList.remove("hidden");
 cancelBtn.onclick = () => modal.classList.add("hidden");
 
-monthFilterEl.onchange = () => render();
+monthFilterEl.onchange = render;
 clearFilterBtn.onclick = () => {
   monthFilterEl.value = "";
   render();
@@ -43,161 +49,72 @@ clearFilterBtn.onclick = () => {
 
 exportPdfBtn.onclick = () => window.print();
 
+// ================== UTIL ==================
+const money = n => "$" + Number(n || 0).toLocaleString("es-CL");
+
+const formatDateCL = iso => {
+  const [y, m, d] = iso.split("-");
+  return `${d}-${m}-${y}`;
+};
+
+// ================== CATEGORÍAS ==================
+function rebuildCategoryList() {
+  categoryListEl.innerHTML = "";
+  [...categorias].sort().forEach(c => {
+    categoryListEl.innerHTML += `<option value="${c}">`;
+  });
+}
+
 // ================== SAVE ==================
 saveBtn.onclick = () => {
   const amount = Number(amountEl.value);
+  const cat = categoryEl.value.trim();
 
-  if (!dateEl.value) {
-    alert("Falta la fecha");
+  if (!dateEl.value || !cat || isNaN(amount) || amount <= 0) {
+    alert("Datos inválidos");
     return;
   }
 
-  if (isNaN(amount) || amount <= 0) {
-    alert("Monto inválido");
-    return;
-  }
-
-  const gasto = {
+  gastos.push({
     date: dateEl.value,
-    category: categoryEl.value,
+    category: cat,
     amount
-  };
+  });
 
-  const gastos = load();
-  gastos.push(gasto);
-  save(gastos);
+  categorias.add(cat);
+  rebuildCategoryList();
 
   modal.classList.add("hidden");
   amountEl.value = "";
-  categoryEl.selectedIndex = 0;
+  categoryEl.value = "";
   dateEl.valueAsDate = new Date();
 
   render();
 };
 
-// ================== STORAGE HELPERS ==================
-function load() {
-  return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-}
-
-function save(data) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-}
-
-// ================== UTIL ==================
-function money(n) {
-  const v = Number(n);
-  if (isNaN(v)) return "$0";
-  return "$" + v.toLocaleString("es-CL");
-}
-
-function formatDateCL(isoDate) {
-  if (!isoDate) return "";
-  const [y, m, d] = isoDate.split("-");
-  return `${d}-${m}-${y}`;
-}
-
+// ================== FILTRO ==================
 function getFilteredGastos() {
-  let gastos = load().filter(
-    g => typeof g.amount === "number" && !isNaN(g.amount)
-  );
+  let list = [...gastos];
 
-  const month = monthFilterEl.value;
-  if (month) {
-    gastos = gastos.filter(g => g.date.startsWith(month));
+  if (monthFilterEl.value) {
+    list = list.filter(g => g.date.startsWith(monthFilterEl.value));
   }
 
-  // 🔽 más reciente primero
-  gastos.sort((a, b) => b.date.localeCompare(a.date));
-
-  return gastos;
+  return list.sort((a, b) => b.date.localeCompare(a.date));
 }
-
-// ================== CHART ==================
-function buildRubroData(gastos) {
-  const map = {};
-  gastos.forEach(g => {
-    map[g.category] = (map[g.category] || 0) + g.amount;
-  });
-
-  return {
-    labels: Object.keys(map),
-    values: Object.values(map)
-  };
-}
-
-function renderChart(gastos) {
-  const data = buildRubroData(gastos);
-
-  if (rubroChart) {
-    rubroChart.destroy();
-    rubroChart = null;
-  }
-
-  if (!data.labels.length) return;
-
-  rubroChart = new Chart(chartEl, {
-    type: "doughnut",
-    data: {
-      labels: data.labels,
-      datasets: [{
-        data: data.values,
-        backgroundColor: [
-          "#4facfe", "#43e97b", "#fa709a", "#fbc531",
-          "#9c88ff", "#00cec9", "#e17055", "#fd79a8"
-        ]
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { position: "bottom" },
-        tooltip: {
-          callbacks: {
-            label: ctx => `${ctx.label}: ${money(ctx.raw)}`
-          }
-        }
-      }
-    }
-  });
-}
-
-// ================== EXPORT CSV ==================
-exportCsvBtn.onclick = () => {
-  const gastos = getFilteredGastos();
-  if (!gastos.length) {
-    alert("No hay datos para exportar");
-    return;
-  }
-
-  let csv = "\uFEFFFecha;Rubro;Monto\n";
-  gastos.forEach(g => {
-    csv += `${g.date};${g.category};${g.amount}\n`;
-  });
-
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `gastos_${monthFilterEl.value || "todos"}.csv`;
-  a.click();
-
-  URL.revokeObjectURL(url);
-};
 
 // ================== RENDER ==================
 function render() {
-  const gastos = getFilteredGastos();
+  const list = getFilteredGastos();
 
   bodyEl.innerHTML = "";
   resumenEl.innerHTML = "";
 
-  let totalGlobal = 0;
+  let total = 0;
   const porRubro = {};
 
-  gastos.forEach(g => {
-    totalGlobal += g.amount;
+  list.forEach((g, i) => {
+    total += g.amount;
     porRubro[g.category] = (porRubro[g.category] || 0) + g.amount;
 
     bodyEl.innerHTML += `
@@ -205,101 +122,66 @@ function render() {
         <td>${formatDateCL(g.date)}</td>
         <td>${g.category}</td>
         <td>${money(g.amount)}</td>
-        <td>
-          <button class="delete"
-            data-date="${g.date}"
-            data-category="${g.category}"
-            data-amount="${g.amount}">
-            🗑️
-          </button>
-        </td>
+        <td><button class="delete" data-i="${i}">🗑️</button></td>
       </tr>
     `;
   });
 
-  // eliminar gasto (seguro incluso con filtros)
   document.querySelectorAll(".delete").forEach(btn => {
     btn.onclick = e => {
-      if (!confirm("¿Eliminar este gasto?")) return;
-
-      const { date, category, amount } = e.target.dataset;
-
-      let all = load();
-      all = all.filter(g =>
-        !(g.date === date &&
-          g.category === category &&
-          g.amount === Number(amount))
-      );
-
-      save(all);
+      if (!confirm("¿Eliminar gasto?")) return;
+      gastos.splice(e.target.dataset.i, 1);
+      rebuildFromGastos();
       render();
     };
   });
 
-  // resumen
   for (const r in porRubro) {
-    resumenEl.innerHTML += `
-      <li>${r}: <strong>${money(porRubro[r])}</strong></li>
-    `;
+    resumenEl.innerHTML += `<li>${r}: <strong>${money(porRubro[r])}</strong></li>`;
   }
 
-  totalGlobalEl.textContent = money(totalGlobal);
-  renderChart(gastos);
+  totalGlobalEl.textContent = money(total);
+  renderChart(list);
 }
 
-// ================== BOOT (llamado desde pin.js) ==================
-window.startApp = function () {
-  const lastMonth = getLastMonthWithData();
+// ================== CHART ==================
+function renderChart(list) {
+  if (rubroChart) rubroChart.destroy();
+  if (!list.length) return;
 
-  if (lastMonth) {
-    monthFilterEl.value = lastMonth;
-  }
+  const map = {};
+  list.forEach(g => map[g.category] = (map[g.category] || 0) + g.amount);
 
-  render();
-};
-
-const logoutBtn = document.getElementById("logoutBtn");
-
-if (logoutBtn) {
-  logoutBtn.onclick = () => {
-    if (!confirm("¿Cerrar sesión?")) return;
-
-    localStorage.removeItem("personal_unlocked");
-    location.reload(); // vuelve a pedir PIN
-  };
+  rubroChart = new Chart(chartEl, {
+    type: "doughnut",
+    data: {
+      labels: Object.keys(map),
+      datasets: [{ data: Object.values(map) }]
+    }
+  });
 }
 
-const exportJsonBtn = document.getElementById("exportJson");
-
+// ================== EXPORT JSON ==================
 exportJsonBtn.onclick = () => {
-  const gastos = load();
-
-  if (!gastos.length) {
-    alert("No hay datos para guardar");
-    return;
-  }
+  if (!gastos.length) return alert("No hay datos");
 
   const payload = {
     exportedAt: new Date().toISOString(),
-    total: gastos.reduce((a, g) => a + g.amount, 0),
+    categorias: [...categorias],
     gastos
   };
 
-  const json = JSON.stringify(payload, null, 2);
-  const blob = new Blob([json], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {
+    type: "application/json"
+  });
 
   const a = document.createElement("a");
-  a.href = url;
+  a.href = URL.createObjectURL(blob);
   a.download = getBackupFilename();
   a.click();
-
-  URL.revokeObjectURL(url);
 };
 
-const importJsonBtn  = document.getElementById("importJson");
-const importFileEl   = document.getElementById("importFile");
-
+// ================== IMPORT JSON ==================
 importJsonBtn.onclick = () => {
   importFileEl.value = "";
   importFileEl.click();
@@ -310,109 +192,66 @@ importFileEl.onchange = e => {
   if (!file) return;
 
   const reader = new FileReader();
-
   reader.onload = ev => {
     try {
       const data = JSON.parse(ev.target.result);
+      if (!Array.isArray(data.gastos)) throw "Formato inválido";
 
-      // 🛑 Validaciones mínimas
-      if (!data.gastos || !Array.isArray(data.gastos)) {
-        throw new Error("Formato inválido (no existe 'gastos')");
-      }
+      gastos = data.gastos;
+      rebuildFromGastos();
 
-      data.gastos.forEach(g => {
-        if (
-          !g.date ||
-          !g.category ||
-          typeof g.amount !== "number"
-        ) {
-          throw new Error("Estructura de gasto inválida");
-        }
-      });
-
-      if (!confirm("Esto reemplazará los datos actuales. ¿Continuar?")) {
-        return;
-      }
-
-      // Guardar
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data.gastos));
+      monthFilterEl.value = getLastMonthWithData();
       render();
 
-      alert("Datos importados correctamente ✔️");
-
-    } catch (err) {
-      alert("Error al importar el archivo:\n" + err.message);
+      alert("Datos cargados en memoria ✔️");
+    } catch {
+      alert("Error al importar JSON");
     }
   };
-
-  reader.readAsText(file); 
+  reader.readAsText(file);
 };
+
+// ================== HELPERS ==================
+function rebuildFromGastos() {
+  categorias.clear();
+  gastos.forEach(g => categorias.add(g.category));
+  rebuildCategoryList();
+}
 
 function getBackupFilename() {
   const d = new Date();
-
-  const pad = n => String(n).padStart(2, "0");
-
-  const fecha = `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear()}`;
-  const hora  = `${pad(d.getHours())}-${pad(d.getMinutes())}-${pad(d.getSeconds())}`;
-
-  return `gastos_${fecha}_${hora}.json`;
-}
-
-function totalForMonth(month) {
-  return load()
-    .filter(g => g.date.startsWith(month))
-    .reduce((sum, g) => sum + g.amount, 0);
-}
-
-compareBtn.onclick = () => {
-  const m1 = compareMonthA.value;
-  const m2 = compareMonthB.value;
-
-  if (!m1 || !m2) {
-    alert("Selecciona ambos meses");
-    return;
-  }
-
-  const t1 = totalForMonth(m1);
-  const t2 = totalForMonth(m2);
-
-  const label1 = formatMonthLabel(m1);
-  const label2 = formatMonthLabel(m2);
-
-  let diffText = "";
-
-  if (t1 > t2) {
-    diffText = `${label1} gastó ${money(t1 - t2)} más que ${label2}`;
-  } else if (t2 > t1) {
-    diffText = `${label2} gastó ${money(t2 - t1)} más que ${label1}`;
-  } else {
-    diffText = `Ambos meses tuvieron el mismo gasto`;
-  }
-
-  compareResult.innerHTML = `
-    <strong>${label1}:</strong> ${money(t1)}<br>
-    <strong>${label2}:</strong> ${money(t2)}<br><br>
-    ${diffText}
-  `;
-};
-
-function formatMonthLabel(month) {
-  const [y, m] = month.split("-");
-  const date = new Date(y, m - 1);
-  return date.toLocaleDateString("es-CL", {
-    month: "long",
-    year: "numeric"
-  });
+  const p = n => String(n).padStart(2, "0");
+  return `gastos_${p(d.getDate())}-${p(d.getMonth()+1)}-${d.getFullYear()}_${p(d.getHours())}-${p(d.getMinutes())}-${p(d.getSeconds())}.json`;
 }
 
 function getLastMonthWithData() {
-  const gastos = load();
   if (!gastos.length) return "";
-
-  // ordenar por fecha descendente
-  gastos.sort((a, b) => b.date.localeCompare(a.date));
-
-  // devolver YYYY-MM del más reciente
-  return gastos[0].date.slice(0, 7);
+  return gastos
+    .slice()
+    .sort((a,b)=>b.date.localeCompare(a.date))[0]
+    .date.slice(0,7);
 }
+
+// ================== COMPARAR ==================
+compareBtn.onclick = () => {
+  const m1 = compareMonthA.value;
+  const m2 = compareMonthB.value;
+  if (!m1 || !m2) return alert("Selecciona ambos meses");
+
+  const t = m => gastos
+    .filter(g => g.date.startsWith(m))
+    .reduce((s,g)=>s+g.amount,0);
+
+  const t1 = t(m1), t2 = t(m2);
+
+  compareResult.innerHTML = `
+    <strong>${m1}:</strong> ${money(t1)}<br>
+    <strong>${m2}:</strong> ${money(t2)}<br><br>
+    ${t1===t2 ? "Mismo gasto" :
+      t1>t2 ? `${m1} gastó ${money(t1-t2)} más`
+            : `${m2} gastó ${money(t2-t1)} más`}
+  `;
+};
+
+// ================== BOOT ==================
+render();

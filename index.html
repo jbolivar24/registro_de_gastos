@@ -8,125 +8,86 @@
 </head>
 <body>
 
-  <main class="container">
-    <h1>💸 Registro de Gastos</h1>
+<main class="container">
+  <h1>💸 Registro de Gastos</h1>
 
-    <button id="btnAdd" class="primary">Registrar gasto</button>
-    <div class="session-box">
-      <button id="changePin">🔐 Cambiar PIN</button>
-      <button id="logoutBtn">🚪 Cerrar sesión</button>
-    </div>
+  <button id="btnAdd" class="primary">Registrar gasto</button>
 
-    <div class="filter-box">
-      <label>Mes</label>
-      <input type="month" id="monthFilter">
-      <button id="clearFilter">Todos</button>
-    </div>
-
-    <div id="printMonth" class="print-only"></div>
-
-    <!-- TOTAL GLOBAL -->
-    <div class="total-box">
-      Total gastado:
-      <span id="totalGlobal">$0</span>
-    </div>
-
-    <div class="export-box">
-      <button id="exportCsv">📤 Exportar CSV</button>
-      <button id="exportPdf">📄 Exportar PDF</button>
-      <button id="exportJson">💾 Guardar JSON</button>
-      <button id="importJson">📥 Importar JSON</button>
-      <input type="file" id="importFile" accept="application/json" hidden>
-    </div>
-
-    <!-- TABLA -->
-    <table>
-      <thead>
-        <tr>
-          <th>Fecha</th>
-          <th>Rubro</th>
-          <th>Monto</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody id="gastosBody"></tbody>
-    </table>
-
-    <!-- RESUMEN -->
-    <h2>Resumen por rubro</h2>
-    <ul id="resumen"></ul>
-  </main>
-
-  <h2>Distribución por rubro</h2>
-  <div class="chart-box">
-    <canvas id="chartRubro"></canvas>
+  <div class="filter-box">
+    <label>Mes</label>
+    <input type="month" id="monthFilter">
+    <button id="clearFilter">Todos</button>
   </div>
 
-  <h2>Comparación de meses</h2>
-
-  <div class="compare-box">
-    <input type="month" id="compareMonthA">
-    <input type="month" id="compareMonthB">
-    <button id="compareBtn">Comparar</button>
+  <div class="total-box">
+    Total gastado:
+    <span id="totalGlobal">$0</span>
   </div>
 
-  <div id="compareResult"></div>
+  <div class="export-box">
+    <button id="exportCsv">📤 Exportar CSV</button>
+    <button id="exportPdf">📄 Exportar PDF</button>
+    <button id="exportJson">💾 Guardar JSON</button>
+    <button id="importJson">📥 Importar JSON</button>
+    <input type="file" id="importFile" accept="application/json" hidden>
+  </div>
 
-  <!-- MODAL -->
-  <div id="modal" class="modal hidden">
-    <div class="modal-content">
-      <h3>Registrar gasto</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Fecha</th>
+        <th>Rubro</th>
+        <th>Monto</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="gastosBody"></tbody>
+  </table>
 
-      <label>Fecha</label>
-      <input type="date" id="date">
+  <h2>Resumen por rubro</h2>
+  <ul id="resumen"></ul>
+</main>
 
-      <label>Rubro</label>
-      <select id="category">
-        <option>AGUA</option>
-        <option>DIVIDENDO</option>
-        <option>CELULARES</option>
-        <option>CREDITO MERCADOLIBRE</option>
-        <option>CREDITO SANTANDER</option>
-        <option>ELECTRICIDAD</option>
-        <option>GAS</option>
-        <option>GASTOS COMUNES</option>
-        <option>INTERNET</option>
-        <option>TARJETA DE CREDITO</option>
-        <option>OTROS GASTOS</option>
-      </select>
+<h2>Distribución por rubro</h2>
+<div class="chart-box">
+  <canvas id="chartRubro"></canvas>
+</div>
 
-      <label>Monto</label>
-      <input type="number" id="amount" placeholder="Ej: 250265">
+<h2>Comparación de meses</h2>
+<div class="compare-box">
+  <input type="month" id="compareMonthA">
+  <input type="month" id="compareMonthB">
+  <button id="compareBtn">Comparar</button>
+</div>
+<div id="compareResult"></div>
 
-      <label>Nota (opcional)</label>
-      <input type="text" id="note">
+<!-- MODAL -->
+<div id="modal" class="modal hidden">
+  <div class="modal-content">
+    <h3>Registrar gasto</h3>
 
-      <div class="actions">
-        <button id="cancel">Cancelar</button>
-        <button id="save" class="primary">Guardar</button>
-      </div>
+    <label>Fecha</label>
+    <input type="date" id="date">
+
+    <label>Rubro</label>
+    <input
+      id="category"
+      list="categoryList"
+      placeholder="Escribe o selecciona rubro"
+    />
+    <datalist id="categoryList"></datalist>
+
+    <label>Monto</label>
+    <input type="number" id="amount">
+
+    <div class="actions">
+      <button id="cancel">Cancelar</button>
+      <button id="save" class="primary">Guardar</button>
     </div>
   </div>
+</div>
 
-  <div id="pinModal" class="modal hidden">
-    <div class="modal-content">
-      <h3 id="pinTitle">Acceso personal</h3>
-
-      <input
-        type="password"
-        id="pinInput"
-        maxlength="4"
-        inputmode="numeric"
-        placeholder="PIN de 4 dígitos"
-      >
-
-      <button id="pinConfirm" class="primary">Confirmar</button>
-    </div>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="pin.js"></script>
-  <script src="app.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
