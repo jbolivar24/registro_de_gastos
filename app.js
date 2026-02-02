@@ -86,6 +86,12 @@ function money(n) {
   return "$" + v.toLocaleString("es-CL");
 }
 
+function formatDateCL(isoDate) {
+  if (!isoDate) return "";
+  const [y, m, d] = isoDate.split("-");
+  return `${d}-${m}-${y}`;
+}
+
 function getFilteredGastos() {
   let gastos = load().filter(
     g => typeof g.amount === "number" && !isNaN(g.amount)
@@ -191,7 +197,7 @@ function render() {
 
     bodyEl.innerHTML += `
       <tr>
-        <td>${g.date}</td>
+        <td>${formatDateCL(g.date)}</td>
         <td>${g.category}</td>
         <td>${money(g.amount)}</td>
         <td>
