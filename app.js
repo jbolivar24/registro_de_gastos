@@ -62,9 +62,11 @@ const formatDateCL = iso => {
 // ================== CATEGORÍAS ==================
 function rebuildCategoryList() {
   categoryListEl.innerHTML = "";
-  [...categorias].sort().forEach(c => {
-    categoryListEl.innerHTML += `<option value="${c}">`;
-  });
+  [...categorias]
+    .sort((a, b) => a.localeCompare(b, "es"))
+    .forEach(c => {
+      categoryListEl.innerHTML += `<option value="${c}">`;
+    });
 }
 
 // ================== SAVE ==================
@@ -138,9 +140,14 @@ function render() {
     };
   });
 
-  for (const r in porRubro) {
-    resumenEl.innerHTML += `<li>${r}: <strong>${money(porRubro[r])}</strong></li>`;
-  }
+  // 🔽 RESUMEN POR RUBRO (ORDENADO)
+  Object.keys(porRubro)
+    .sort((a, b) => a.localeCompare(b, "es"))
+    .forEach(r => {
+      resumenEl.innerHTML += `
+        <li>${r}: <strong>${money(porRubro[r])}</strong></li>
+      `;
+    });
 
   totalGlobalEl.textContent = money(total);
   renderChart(list);
@@ -256,6 +263,7 @@ compareBtn.onclick = () => {
   `;
 };
 
+// ================== RESUMEN HISTÓRICO ==================
 function buildResumenTotal() {
   const map = {};
 
@@ -265,11 +273,13 @@ function buildResumenTotal() {
 
   resumenTotalEl.innerHTML = "";
 
-  for (const r in map) {
-    resumenTotalEl.innerHTML += `
-      <li>${r}: <strong>${money(map[r])}</strong></li>
-    `;
-  }
+  Object.keys(map)
+    .sort((a, b) => a.localeCompare(b, "es"))
+    .forEach(r => {
+      resumenTotalEl.innerHTML += `
+        <li>${r}: <strong>${money(map[r])}</strong></li>
+      `;
+    });
 }
 
 // ================== BOOT ==================
