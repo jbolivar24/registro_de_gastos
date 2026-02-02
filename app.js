@@ -96,6 +96,9 @@ function getFilteredGastos() {
     gastos = gastos.filter(g => g.date.startsWith(month));
   }
 
+  // 🔽 más reciente primero
+  gastos.sort((a, b) => b.date.localeCompare(a.date));
+
   return gastos;
 }
 
