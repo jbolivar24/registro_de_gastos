@@ -2,6 +2,8 @@
 let gastos = [];
 let categorias = new Set();
 
+const resumenTotalEl = document.getElementById("resumenTotal");
+
 // ================== ELEMENTOS ==================
 const monthFilterEl  = document.getElementById("monthFilter");
 const clearFilterBtn = document.getElementById("clearFilter");
@@ -142,6 +144,7 @@ function render() {
 
   totalGlobalEl.textContent = money(total);
   renderChart(list);
+  buildResumenTotal();
 }
 
 // ================== CHART ==================
@@ -252,6 +255,22 @@ compareBtn.onclick = () => {
             : `${m2} gastó ${money(t2-t1)} más`}
   `;
 };
+
+function buildResumenTotal() {
+  const map = {};
+
+  gastos.forEach(g => {
+    map[g.category] = (map[g.category] || 0) + g.amount;
+  });
+
+  resumenTotalEl.innerHTML = "";
+
+  for (const r in map) {
+    resumenTotalEl.innerHTML += `
+      <li>${r}: <strong>${money(map[r])}</strong></li>
+    `;
+  }
+}
 
 // ================== BOOT ==================
 render();
