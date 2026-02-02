@@ -1,6 +1,11 @@
 // ================== STORAGE ==================
 const STORAGE_KEY = "gastos";
 
+const compareMonthA = document.getElementById("compareMonthA");
+const compareMonthB = document.getElementById("compareMonthB");
+const compareBtn    = document.getElementById("compareBtn");
+const compareResult = document.getElementById("compareResult");
+
 // ================== ELEMENTOS ==================
 const monthFilterEl  = document.getElementById("monthFilter");
 const clearFilterBtn = document.getElementById("clearFilter");
@@ -346,4 +351,51 @@ function getBackupFilename() {
   const hora  = `${pad(d.getHours())}-${pad(d.getMinutes())}-${pad(d.getSeconds())}`;
 
   return `gastos_${fecha}_${hora}.json`;
+}
+
+function totalForMonth(month) {
+  return load()
+    .filter(g => g.date.startsWith(month))
+    .reduce((sum, g) => sum + g.amount, 0);
+}
+
+compareBtn.onclick = () => {
+  const m1 = compareMonthA.value;
+  const m2 = compareMonthB.value;
+
+  if (!m1 || !m2) {
+    alert("Selecciona ambos meses");
+    return;
+  }
+
+  const t1 = totalForMonth(m1);
+  const t2 = totalForMonth(m2);
+
+  const label1 = formatMonthLabel(m1);
+  const label2 = formatMonthLabel(m2);
+
+  let diffText = "";
+
+  if (t1 > t2) {
+    diffText = `${label1} gastó ${money(t1 - t2)} más que ${label2}`;
+  } else if (t2 > t1) {
+    diffText = `${label2} gastó ${money(t2 - t1)} más que ${label1}`;
+  } else {
+    diffText = `Ambos meses tuvieron el mismo gasto`;
+  }
+
+  compareResult.innerHTML = `
+    <strong>${label1}:</strong> ${money(t1)}<br>
+    <strong>${label2}:</strong> ${money(t2)}<br><br>
+    ${diffText}
+  `;
+};
+
+function formatMonthLabel(month) {
+  const [y, m] = month.split("-");
+  const date = new Date(y, m - 1);
+  return date.toLocaleDateString("es-CL", {
+    month: "long",
+    year: "numeric"
+  });
 }
