@@ -350,3 +350,38 @@ input, select {
 .session-box button {
   flex: 1;
 }
+
+/* ================== TABLA SCROLLEABLE ================== */
+
+.table-wrapper {
+  max-height: 420px;          /* ajusta a gusto */
+  overflow-y: auto;
+  border-radius: 14px;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
+}
+
+/* Mantener encabezado fijo */
+.gastos-table thead th {
+  position: sticky;
+  top: 0;
+  background: rgba(10, 10, 20, 0.95);
+  z-index: 2;
+}
+
+/* Scrollbar discreto */
+.table-wrapper::-webkit-scrollbar {
+  width: 8px;
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.25);
+  border-radius: 6px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.45);
+}

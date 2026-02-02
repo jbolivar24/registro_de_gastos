@@ -32,17 +32,20 @@
     <input type="file" id="importFile" accept="application/json" hidden>
   </div>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Fecha</th>
-        <th>Rubro</th>
-        <th>Monto</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody id="gastosBody"></tbody>
-  </table>
+  <!-- 🔽 CONTENEDOR SCROLLEABLE -->
+  <div class="table-wrapper">
+    <table class="gastos-table">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Rubro</th>
+          <th>Monto</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="gastosBody"></tbody>
+    </table>
+  </div>
 
   <h2>Resumen por rubro de la selección</h2>
   <ul id="resumen"></ul>
